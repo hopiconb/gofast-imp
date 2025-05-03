@@ -1,0 +1,31 @@
+version: "3.9"
+services:
+  go-server:
+    build: .
+    ports:
+      - "8089:8089"
+    depends_on:
+      - cassandra
+      - postgres
+
+  cassandra:
+    image: cassandra:4.1
+    ports:
+      - "9042:9042"
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+
+  print-ports:
+    image: busybox
+    depends_on:
+      - go-server
+    command: >
+      sh -c "echo '✅ Services running on the following ports:' &&
+             echo '🌐 go-server:     http://localhost:8089' &&
+             echo '🛢️  cassandra:     localhost:9042' &&
+             echo '🐘 postgres:      localhost:5432'"
