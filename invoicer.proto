@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/hopiconb/gofast-imp-dev/invoicer";
+option go_package = "github.com/hopiconb/gofast-imp/invoicer";
 
 message Amount {
     int64 amount = 1;
@@ -8,10 +8,11 @@ message Amount {
 }
 
 message CreateRequest {
-    Amount amount = 1;
-    string from = 2;
-    string to = 3;
-    string VATnumber = 4;
+    string user = 1;
+    Amount amount = 2;
+    string from = 3;
+    string to = 4;
+    string VATnumber = 5;
 }
 
 message CreateResponse {

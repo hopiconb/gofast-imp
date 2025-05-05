@@ -19,11 +19,13 @@ func main() {
 	client := invoicer.NewInvoicerClient(conn)
 
 	resp, err := client.Create(context.Background(), &invoicer.CreateRequest{
+		User:      "cosmin",
 		Amount:    &invoicer.Amount{Amount: 12345, Currency: "USD"},
 		From:      "Company A",
 		To:        "Company B",
 		VATnumber: "VAT1234567",
 	})
+
 	if err != nil {
 		log.Fatalf("error calling Create: %v", err)
 	}

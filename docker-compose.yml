@@ -1,17 +1,29 @@
 version: "3.9"
+
 services:
   go-server:
     build: .
     ports:
       - "8089:8089"
+      - "2112:2112"  # Prometheus metrics port
     depends_on:
       - cassandra
       - postgres
+    networks:
+      - gofast-network
 
   cassandra:
     image: cassandra:4.1
+    environment:
+      CASSANDRA_CLUSTER_NAME: "Test Cluster"
+      CASSANDRA_LISTEN_ADDRESS: "cassandra"
+      CASSANDRA_RPC_ADDRESS: "0.0.0.0"
+      CASSANDRA_BROADCAST_ADDRESS: "cassandra"
+      CASSANDRA_BROADCAST_RPC_ADDRESS: "cassandra"
     ports:
       - "9042:9042"
+    networks:
+      - gofast-network
 
   postgres:
     image: postgres:16
@@ -19,13 +31,45 @@ services:
       POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
+    networks:
+      - gofast-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - gofast-network
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - gofast-network
 
   print-ports:
     image: busybox
-    depends_on:
-      - go-server
     command: >
       sh -c "echo '✅ Services running on the following ports:' &&
              echo '🌐 go-server:     http://localhost:8089' &&
+             echo '📊 prometheus:    http://localhost:9090' &&
+             echo '📈 grafana:       http://localhost:3000' &&
              echo '🛢️  cassandra:     localhost:9042' &&
              echo '🐘 postgres:      localhost:5432'"
+    depends_on:
+      - go-server
+
+networks:
+  gofast-network:
+    driver: bridge
+
+volumes:
+  prometheus_data:
+  grafana_data:
